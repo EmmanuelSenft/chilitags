@@ -99,8 +99,8 @@ int main(int argc, char* argv[])
         detector.update();
 
         for (auto& kv : objects.all()) {
-            cout << kv.first;
-            cout << " at " << kv.second << endl;
+            //cout << kv.first;
+            //cout << " at " << kv.second << endl;
         }
 
     }

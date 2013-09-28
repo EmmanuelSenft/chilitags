@@ -60,6 +60,10 @@ public:
 private:
     void init(float size);
 
+    bool isCalibrated;
+    mutable double calibError;
+    mutable std::vector<std::vector<cv::Point3f>> calibCorners;
+    mutable std::vector<std::vector<cv::Point2f>> calibImagePoints;
     cv::InputArray cameraMatrix;
     cv::InputArray distCoeffs;
 

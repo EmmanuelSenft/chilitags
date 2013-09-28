@@ -22,6 +22,7 @@ Objects::Objects(InputArray cameraMatrix,
                     distCoeffs(distCoeffs),
                     _config(""),
                     gain(gain),
+                    isCalibrated(false),
                     hasObjectConfiguration(false)
 {
     init(size);
@@ -37,6 +38,7 @@ Objects::Objects(InputArray cameraMatrix,
                     distCoeffs(distCoeffs),
                     _config(configuration),
                     gain(gain),
+                    isCalibrated(false),
                     hasObjectConfiguration(true)
 {
     init(defaultSize);
@@ -51,6 +53,7 @@ Objects::Objects(InputArray cameraMatrix,
                     distCoeffs(distCoeffs),
                     _config(configuration),
                     gain(gain),
+                    isCalibrated(false),
                     hasObjectConfiguration(true)
 {
     init(defaultSize);
@@ -69,6 +72,9 @@ void Objects::init(float size)
 
 map<string, Matx44d> Objects::all() const
 {
+
+    static int calibImgCount = 0;
+    static int calibObjectCount = 0;
 
     map<string, Matx44d> objects;
 
@@ -119,6 +125,8 @@ map<string, Matx44d> Objects::all() const
      *     Process objects
      ********************************************/
     for (auto& kv : tagsPerObject) {
+        calibObjectCount++;
+        cout << "object count: " << calibObjectCount << endl;
 
         string name(kv.first->name);
         vector<Point3f> corners;
@@ -148,7 +156,29 @@ map<string, Matx44d> Objects::all() const
             imagePoints.insert(imagePoints.end(),newPoints.cbegin(),newPoints.cend());
 
         }
+    
+        if (!isCalibrated && (calibObjectCount % 2 == 0)) {
 
+            calibCorners.push_back(corners);
+            calibImagePoints.push_back(imagePoints);
+
+            calibImgCount++;
+
+            if (calibImgCount == 10) {
+                Size size(640, 480);
+                Mat calibCameraMatrix;
+                Mat calibDistCoeffs;
+                vector<Mat> calibRVecs;
+                vector<Mat> calibTVecs;
+                calibError = calibrateCamera(calibCorners, calibImagePoints,
+                                size,
+                                calibCameraMatrix, calibDistCoeffs,
+                                calibRVecs, calibTVecs);
+                cout << "Calibration error: " << calibError << endl;
+                cout << calibCameraMatrix << endl;
+                exit(0);
+            }
+        }
         computeTransformation(name, corners, imagePoints, objects);
 
     }
