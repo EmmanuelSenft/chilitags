@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
     /*****************************/
     cout << "I'm now looking for objects..." << endl;
     cv::Mat tInputImage;
-    chilitags::DetectChilitags detector(&tInputImage);
+    chilitags::DetectChilitags tags(&tInputImage);
 
     chilitags::Objects objects(cameraMatrix, distCoeffs,
                                configFilename,
@@ -93,7 +93,8 @@ int main(int argc, char* argv[])
     for (; 'q' != (char) cv::waitKey(10); ) {
 
         capture.read(tInputImage);
-        detector.update();
+        tags.update();
+		objects.update();
 
         for (auto& kv : objects.all()) {
             cout << kv.first;
